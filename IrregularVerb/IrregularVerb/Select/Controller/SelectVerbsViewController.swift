@@ -11,7 +11,7 @@ import SnapKit
 final class SelectVerbsViewController: UITableViewController {
     
     //MARK: - Properties
-    private var dataSource = IrregularVerbs()
+    private var dataSource = IrregularVerbs.shared
     
     //MARK: - Life cycle
     override func viewDidLoad() {
@@ -22,7 +22,7 @@ final class SelectVerbsViewController: UITableViewController {
         //так как ячейку писали кодом, то не через nib, а через cellClass
         tableView.register(SelectVerbTableViewCell.self, forCellReuseIdentifier: "SelectVerbTableViewCell")
         
-        dataSource.configureVerbs()
+        //dataSource.configureVerbs()
     }
     
     //MARK: - Private methods
