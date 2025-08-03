@@ -67,7 +67,15 @@ class HomeViewController: UIViewController {
     @objc
     private func goToTrainViewController() {
         //navigationController?.present(TrainViewController(), animated: true)
-        navigationController?.pushViewController(TrainViewController(), animated: true)
+        if IrregularVerbs.shared.selectedVerbs.isEmpty {
+            let alert = UIAlertController(title: "Error".localized, message: "You cannot start the training because you have not selected any verbs. Please select at least one verb from the list.".localized, preferredStyle: .alert)
+            let action = UIAlertAction(title: "OK", style: .default)
+            alert.addAction(action)
+            
+            present(alert, animated: true)
+        } else {
+            navigationController?.pushViewController(TrainViewController(), animated: true)
+        }
     }
     private func configureUI() {
         view.addSubview(titleLabel)

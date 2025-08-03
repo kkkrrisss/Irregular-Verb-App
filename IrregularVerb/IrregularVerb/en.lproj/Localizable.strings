@@ -8,3 +8,36 @@
 
 "Select verbs" = "Select verbs";
 "Train verbs" = "Train verbs";
+"Score" = "Score";
+"Check" = "Check";
+"Skip" = "Skip";
+"Next" = "Next";
+"Try Again" = "Try Again";
+"Congratulations!🎉" = "Congratulations!🎉";
+"You have completed the verb training with a score of" = "You have completed the verb training with a score of";
+"OK" = "OK";
+"No answer" = "No answer";
+"It seems that the response field is empty. Please enter the answer!" = "It seems that the response field is empty. Please enter the answer!";
+"Error" = "Error";
+"You cannot start the training because you have not selected any verbs. Please select at least one verb from the list." = "You cannot start the training because you have not selected any verbs. Please select at least one verb from the list.";
+
+"become" = "become";
+"begin" = "begin";
+"blow" = "blow";
+"break" = "break";
+"come" = "come";
+"do" = "do";
+"draw" = "draw";
+"drink" = "drink";
+"drive" = "drive";
+"give" = "give";
+"go" = "go";
+"grow" = "grow";
+"lose" = "lose";
+"make" = "make";
+"meet" = "meet";
+"swim" = "swim";
+"take" = "take";
+"tell" = "tell";
+"win" = "win";
+"write" = "write";
