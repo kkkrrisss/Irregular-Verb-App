@@ -11,7 +11,7 @@ import SnapKit
 final class TrainViewController: UIViewController {
     
     //MARK: - GUI Properties
-    private lazy var scrollView: UIScrollView = {
+    private let scrollView: UIScrollView = {
         let view = UIScrollView()
         
         view.showsVerticalScrollIndicator = false
@@ -19,9 +19,9 @@ final class TrainViewController: UIViewController {
         return view
     }()
     
-    private lazy var contentView: UIView = UIView()
+    private let contentView: UIView = UIView()
     
-    private lazy var scoreLabel: UILabel = {
+    private let scoreLabel: UILabel = {
         let label = UILabel()
         
         label.font = .boldSystemFont(ofSize: 14)
@@ -41,7 +41,7 @@ final class TrainViewController: UIViewController {
         return label
     }()
     
-    private lazy var infinitiveLabel: UILabel = {
+    private let infinitiveLabel: UILabel = {
         let label = UILabel()
         
         label.font = .boldSystemFont(ofSize: 28)
@@ -51,7 +51,7 @@ final class TrainViewController: UIViewController {
         return label
     }()
     
-    private lazy var pastSimpleLabel: UILabel = {
+    private let pastSimpleLabel: UILabel = {
         let label = UILabel()
         
         label.font = .boldSystemFont(ofSize: 14)
@@ -61,7 +61,7 @@ final class TrainViewController: UIViewController {
         return label
     }()
     
-    private lazy var participleLabel: UILabel = {
+    private let participleLabel: UILabel = {
         let label = UILabel()
         
         label.font = .boldSystemFont(ofSize: 14)
@@ -109,7 +109,7 @@ final class TrainViewController: UIViewController {
         button.setTitle("Skip".localized, for: .normal)
         button.setTitleColor(UIColor.black, for: .normal)
         button.addTarget(self, action: #selector(skipAction), for: .touchUpInside)
-
+        
         return button
     }()
     
@@ -117,19 +117,25 @@ final class TrainViewController: UIViewController {
     private let edgeInsets = 30
     private let dataSource = IrregularVerbs.shared.selectedVerbs
     private var score = 0
+    private var isScoreCredited: Bool = true
+    
     private var currentVerb: Verb? {
         guard dataSource.count > count else { return nil }
         return dataSource[count]
     }
+   
+    private var isAnswersEmpty: Bool {
+        pastSimpleTextField.text == "" || participleTextField.text == ""
+    }
+    
+    private var checkAnswers: Bool {
+        pastSimpleTextField.text == currentVerb?.pastSimple &&
+        participleTextField.text == currentVerb?.participle
+    }
+    
     private var count = 0 {
         didSet {
-            infinitiveLabel.text = currentVerb?.infinitive
-            pastSimpleTextField.text = ""
-            participleTextField.text = ""
-            checkButton.backgroundColor = .systemGray5
-            checkButton.setTitle("Check".localized, for: .normal)
-            countVerbLabel.text = "\(count+1)/\(dataSource.count)"
-            skipButton.isHidden = false
+            changedInfinitive()
         }
     }
     
@@ -141,8 +147,6 @@ final class TrainViewController: UIViewController {
         
         setupUI()
         hideKeyboardWhenTappedAround()
-        infinitiveLabel.text = dataSource.first?.infinitive
-        scoreLabel.text = "Score".localized + ": \(score)"
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -158,44 +162,89 @@ final class TrainViewController: UIViewController {
     }
     //MARK: - Private Methods
     
+    //MARK: Action
     @objc
     private func checkAction() {
-        if checkAnswers() && !isAnswersEmpty(){
-                score += (checkButton.backgroundColor == .systemRed || checkButton.title(for: .normal) == "Next".localized) ? 0 : 1
-                scoreLabel.text = "Score".localized + ": \(score)"
-                if currentVerb?.infinitive == dataSource.last?.infinitive {
-                    addAlertFinal()
-                } else {
-                    count += 1
-                }
-        } else if isAnswersEmpty() {
+        textFieldNormalized()
+        
+        if checkAnswers{
+            score += isScoreCredited ? 1 : 0
+            scoreLabel.text = "Score".localized + ": \(score)"
+            
+            if currentVerb?.infinitive == dataSource.last?.infinitive {
+                addAlertFinal()
+            } else {
+                count += 1
+            }
+
+        } else if isAnswersEmpty {
             addAlertEmptyAnswers()
+            
         } else {
-                checkButton.backgroundColor = .systemRed
-                checkButton.setTitle("Try Again".localized, for: .normal)
+            wrongAnswer()
+        }
+    }
+    
+    @objc
+    private func skipAction() {
+        checkButton.backgroundColor = .systemGray5
+        pastSimpleTextField.text = "\(currentVerb?.pastSimple ?? "")"
+        participleTextField.text = "\(currentVerb?.participle ?? "")"
+        skipButton.isHidden = true
+        checkButton.setTitle("Next".localized, for: .normal)
+        isScoreCredited = false
+    }
+    
+    //MARK: Logic
+    private func textFieldNormalized() {
+        pastSimpleTextField.text = pastSimpleTextField.text?.trimmingCharacters(in: .whitespaces).lowercased()
+        participleTextField.text = participleTextField.text?.trimmingCharacters(in: .whitespaces).lowercased()
+    }
+    
+    private func wrongAnswer() {
+        checkButton.backgroundColor = .systemRed
+        checkButton.setTitle("Try Again".localized, for: .normal)
+        isScoreCredited = false
+    }
+    
+    private func changedInfinitive() {
+        infinitiveLabel.text = currentVerb?.infinitive
+        pastSimpleTextField.text = ""
+        participleTextField.text = ""
+        
+        checkButton.backgroundColor = .systemGray5
+        checkButton.setTitle("Check".localized, for: .normal)
+        
+        countVerbLabel.text = "\(count+1)/\(dataSource.count)"
+        
+        skipButton.isHidden = false
+        
+        isScoreCredited = true
+    }
+    @objc
+    private func buttonTappedColorChange() {
+        let originalColor = checkButton.backgroundColor
+        
+        if originalColor == .systemRed {
+            checkButton.backgroundColor = .red
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.checkButton.backgroundColor = originalColor
             }
         }
-    
-    private func checkAnswers() -> Bool {
-        
-        pastSimpleTextField.text?.lowercased().trimmingCharacters(in: .whitespaces) == currentVerb?.pastSimple &&
-        participleTextField.text?.lowercased().trimmingCharacters(in: .whitespaces) == currentVerb?.participle
-        
     }
     
-    private func isAnswersEmpty() -> Bool {
-        pastSimpleTextField.text?.trimmingCharacters(in: .whitespaces) == "" || participleTextField.text?.trimmingCharacters(in: .whitespaces) == ""
-    }
-    
+    //MARK: Alert
     private func addAlertFinal() {
         let alert = UIAlertController(title: "Congratulations!🎉".localized, message: "You have completed the verb training with a score of".localized + " \(score)/\(dataSource.count)", preferredStyle: .alert)
         let action = UIAlertAction(title: "OK".localized, style: .default) { _ in
             self.navigationController?.popViewController(animated: true)
         }
+        
         alert.addAction(action)
         
         present(alert, animated: true)
     }
+    
     
     private func addAlertEmptyAnswers() {
         let alert = UIAlertController(title: "No answer".localized, message: "It seems that the response field is empty. Please enter the answer!".localized, preferredStyle: .alert)
@@ -204,31 +253,13 @@ final class TrainViewController: UIViewController {
         
         present(alert, animated: true)
     }
-    @objc
-    private func skipAction() {
-        checkButton.backgroundColor = .systemGray5
-        pastSimpleTextField.text = "\(currentVerb?.pastSimple ?? "")"
-        participleTextField.text = "\(currentVerb?.participle ?? "")"
-        skipButton.isHidden = true
-        checkButton.setTitle("Next".localized, for: .normal)
-    }
-    
-    @objc
-    private func buttonTappedColorChange() {
-        let originalColor = checkButton.backgroundColor
 
-        if originalColor == .systemRed {
-            checkButton.backgroundColor = .red
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                   self.checkButton.backgroundColor = originalColor
-               }
-        }
-
-        
-    }
     
+    // MARK: setup
     private func setupUI() {
         view.backgroundColor = .white
+        infinitiveLabel.text = dataSource.first?.infinitive
+        scoreLabel.text = "Score".localized + ": \(score)"
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -313,6 +344,10 @@ extension TrainViewController: UITextFieldDelegate {
             scrollView.endEditing(true)
         }
     }
+    
+//    func textFieldDidEndEditing(_ textField: UITextField) {
+//        textField.text = textField.text?.trimmingCharacters(in: .whitespaces).lowercased()
+//    }
 }
 
 //MARK: - Keyboards events
@@ -334,8 +369,8 @@ private extension TrainViewController {
         
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-
-
+    
+    
     
     @objc
     func keyboardWillShow(_ notification: Notification) {
