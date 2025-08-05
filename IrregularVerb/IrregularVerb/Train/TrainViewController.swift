@@ -31,12 +31,11 @@ final class TrainViewController: UIViewController {
         return label
     }()
     
-    private lazy var countVerbLabel: UILabel = {
+    private let countVerbLabel: UILabel = {
         let label = UILabel()
         
         label.font = .boldSystemFont(ofSize: 14)
         label.textColor = .gray
-        label.text = "1/\(dataSource.count)"
         
         return label
     }()
@@ -71,45 +70,41 @@ final class TrainViewController: UIViewController {
         return label
     }()
     
-    private lazy var pastSimpleTextField: UITextField = {
+    private let pastSimpleTextField: UITextField = {
         let field = UITextField()
         
         field.borderStyle = .roundedRect
-        field.delegate = self
         
         return field
     }()
     
-    private lazy var participleTextField: UITextField = {
+    private let participleTextField: UITextField = {
         let field = UITextField()
         
         field.borderStyle = .roundedRect
-        field.delegate = self
         
         return field
     }()
     
-    private lazy var checkButton: UIButton = {
+    private let checkButton: UIButton = {
         let button = UIButton()
         
         button.layer.cornerRadius = 20
         button.backgroundColor = .systemGray5
         button.setTitle("Check".localized, for: .normal)
         button.setTitleColor(UIColor.black, for: .normal)
-        button.addTarget(self, action: #selector(checkAction), for: .touchUpInside)
-        button.addTarget(self, action: #selector(buttonTappedColorChange), for: .touchUpInside)
+        
         return button
     }()
     
-    private lazy var skipButton: UIButton = {
+    private let skipButton: UIButton = {
         let button = UIButton()
         
         button.layer.cornerRadius = 20
         button.backgroundColor = .systemGray5
         button.setTitle("Skip".localized, for: .normal)
         button.setTitleColor(UIColor.black, for: .normal)
-        button.addTarget(self, action: #selector(skipAction), for: .touchUpInside)
-        
+       
         return button
     }()
     
@@ -172,13 +167,19 @@ final class TrainViewController: UIViewController {
             scoreLabel.text = "Score".localized + ": \(score)"
             
             if currentVerb?.infinitive == dataSource.last?.infinitive {
-                addAlertFinal()
+                showAlert(title: "Congratulations!🎉".localized,
+                          message: "You have completed the verb training with a score of".localized + " \(score)/\(dataSource.count)",
+                          buttonTitle: "OK".localized) {
+                    self.navigationController?.popViewController(animated: true)
+                }
             } else {
                 count += 1
             }
 
         } else if isAnswersEmpty {
-            addAlertEmptyAnswers()
+            showAlert(title: "No answer".localized,
+                      message: "It seems that the response field is empty. Please enter the answer!".localized,
+                      buttonTitle: "OK".localized)
             
         } else {
             wrongAnswer()
@@ -234,28 +235,37 @@ final class TrainViewController: UIViewController {
     }
     
     //MARK: Alert
-    private func addAlertFinal() {
-        let alert = UIAlertController(title: "Congratulations!🎉".localized, message: "You have completed the verb training with a score of".localized + " \(score)/\(dataSource.count)", preferredStyle: .alert)
-        let action = UIAlertAction(title: "OK".localized, style: .default) { _ in
-            self.navigationController?.popViewController(animated: true)
+    
+    private func showAlert(title: String, message: String, buttonTitle: String, handler: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let action = UIAlertAction(title: buttonTitle, style: .default) { _ in
+            handler?()
         }
         
         alert.addAction(action)
-        
         present(alert, animated: true)
     }
     
+    // MARK: Setup
     
-    private func addAlertEmptyAnswers() {
-        let alert = UIAlertController(title: "No answer".localized, message: "It seems that the response field is empty. Please enter the answer!".localized, preferredStyle: .alert)
-        let action = UIAlertAction(title: "OK".localized, style: .default)
-        alert.addAction(action)
-        
-        present(alert, animated: true)
+    private func setupLabel() {
+        countVerbLabel.text = "1/\(dataSource.count)"
     }
-
     
-    // MARK: setup
+    private func setupTextField() {
+        pastSimpleTextField.delegate = self
+        participleTextField.delegate = self
+    }
+    
+    private func setupCheckButton() {
+        checkButton.addTarget(self, action: #selector(checkAction), for: .touchUpInside)
+        checkButton.addTarget(self, action: #selector(buttonTappedColorChange), for: .touchUpInside)
+    }
+    
+    private func setupSkipButton() {
+        skipButton.addTarget(self, action: #selector(skipAction), for: .touchUpInside)
+    }
+    
     private func setupUI() {
         view.backgroundColor = .white
         infinitiveLabel.text = dataSource.first?.infinitive
@@ -273,6 +283,10 @@ final class TrainViewController: UIViewController {
                                  checkButton,
                                  skipButton])
         
+        setupLabel()
+        setupTextField()
+        setupCheckButton()
+        setupSkipButton()
         setupConstraints()
     }
     
