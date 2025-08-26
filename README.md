@@ -2,6 +2,7 @@
 
 **Irregular Verb App** is an iOS application designed to help users learn English irregular verbs. The app is built in **Swift** using **UIKit** and follows standard iOS application architecture.
 
+<img src="images/home.png" width="230"/> <img src="images/select.png" width="230"/> <img src="images/train.png" width="230"/> <img src="images/end.png" width="230"/>
 ---
 
 ## Features
